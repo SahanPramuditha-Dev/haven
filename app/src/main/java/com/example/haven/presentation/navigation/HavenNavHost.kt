@@ -53,6 +53,11 @@ fun HavenNavHost(
                     navController.navigate(HavenDestinations.HOME) {
                         popUpTo(HavenDestinations.ONBOARDING) { inclusive = true }
                     }
+                },
+                onSignOut = {
+                    navController.navigate(HavenDestinations.AUTH) {
+                        popUpTo(HavenDestinations.ONBOARDING) { inclusive = true }
+                    }
                 }
             )
         }

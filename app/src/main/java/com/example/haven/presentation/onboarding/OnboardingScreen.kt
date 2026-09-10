@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     onFamilyReady: () -> Unit,
+    onSignOut: () -> Unit = {},
     modifier: Modifier = Modifier,
     repository: FamilyRepository = FamilyRepository.instance
 ) {
@@ -38,6 +39,14 @@ fun OnboardingScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Welcome to HAVEN", style = MaterialTheme.typography.titleLarge) },
+                actions = {
+                    TextButton(onClick = {
+                        repository.logout()
+                        onSignOut()
+                    }) {
+                        Text("Sign Out", color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -60,11 +69,13 @@ fun OnboardingScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // High-performance M3 Tab Row with 0 touch slop delay
-            PrimaryTabRow(
+            // High-performance instant segmented TabRow with zero indicator lag
+            TabRow(
                 selectedTabIndex = if (isCreating) 0 else 1,
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = MaterialTheme.colorScheme.primary,
+                indicator = {},
+                divider = {},
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Tab(
@@ -87,7 +98,7 @@ fun OnboardingScreen(
                 )
             }
 
-            // Keep all fields mounted to completely eliminate layout inflation latency on mobile CPU
+            // Zero-jank form container: Pre-mount all inputs so layout cache is warm and no textfield re-allocations occur
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -112,11 +123,11 @@ fun OnboardingScreen(
                     )
                 }
 
-                // Shared field between both modes: 0 reallocation!
+                // Shared field between both modes: 0 reallocation
                 OutlinedTextField(
                     value = displayName,
                     onValueChange = { displayName = it },
-                    label = { Text(if (isCreating) "Your Display Name (e.g. Alice)" else "Your Display Name (e.g. Bob)") },
+                    label = { Text("Your Display Name (e.g. Alice)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium

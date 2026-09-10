@@ -284,6 +284,16 @@ class FamilyRepository(
                 token = savedToken
             )
             apiClient.setAuthToken(savedToken)
+        } else {
+            val fbUser = firebaseAuth.currentUser
+            if (fbUser != null) {
+                _currentUser.value = CurrentUserState(
+                    userId = fbUser.uid,
+                    email = fbUser.email ?: "",
+                    displayName = fbUser.displayName ?: "User",
+                    token = ""
+                )
+            }
         }
 
         val savedId = prefs?.getString("family_id", null)

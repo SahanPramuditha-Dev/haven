@@ -214,7 +214,7 @@ fun AuthScreen(
             val context = androidx.compose.ui.platform.LocalContext.current
             var isGoogleLoading by remember { mutableStateOf(false) }
 
-            OutlinedButton(
+            Button(
                 onClick = {
                     isGoogleLoading = true
                     errorMessage = null
@@ -235,6 +235,15 @@ fun AuthScreen(
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = androidx.compose.ui.graphics.Color.White,
+                    contentColor = androidx.compose.ui.graphics.Color(0xFF1F1F1F)
+                ),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp,
+                    pressedElevation = 4.dp
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFDADCE0)),
                 enabled = !isLoading && !isGoogleLoading
             ) {
                 if (isGoogleLoading) {
@@ -243,13 +252,27 @@ fun AuthScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 } else {
-                    Text(
-                        text = "Continue with Google",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = androidx.compose.ui.res.painterResource(id = com.example.haven.R.drawable.ic_google_logo),
+                            contentDescription = "Google Logo",
+                            tint = androidx.compose.ui.graphics.Color.Unspecified,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Continue with Google",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = androidx.compose.ui.graphics.Color(0xFF1F1F1F)
+                        )
+                    }
                 }
             }
+
         }
     }
 }
