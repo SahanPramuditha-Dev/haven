@@ -178,7 +178,7 @@ private fun WelcomeContent(
                 TextButton(
                     onClick = {
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(onboardingSlides.size - 1)
+                            pagerState.animateScrollToPage(onboardingSlides.size - 1, animationSpec = androidx.compose.animation.core.tween(300))
                         }
                     },
                     modifier = Modifier.align(Alignment.CenterEnd)
@@ -197,6 +197,8 @@ private fun WelcomeContent(
         // Horizontal Pager for the 4 interactive slides
         HorizontalPager(
             state = pagerState,
+            beyondViewportPageCount = 2,
+            key = { onboardingSlides[it].title },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -257,27 +259,23 @@ private fun WelcomeContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Interactive/Animated Dot Indicators
+            // Fast Dot Indicators
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
-                repeat(onboardingSlides.size) { iteration ->
-                    val isSelected = pagerState.currentPage == iteration
-                    val width by animateDpAsState(
-                        targetValue = if (isSelected) 24.dp else 8.dp,
-                        label = "indicatorWidth"
-                    )
-                    val color = if (isSelected) HavenPrimaryTeal else Color(0xFFCBD5E1)
+                val current = pagerState.currentPage
+                for (iteration in onboardingSlides.indices) {
+                    val isSelected = current == iteration
                     Box(
                         modifier = Modifier
-                            .size(width = width, height = 8.dp)
+                            .size(width = if (isSelected) 24.dp else 8.dp, height = 8.dp)
                             .clip(if (isSelected) RoundedCornerShape(4.dp) else CircleShape)
-                            .background(color)
+                            .background(if (isSelected) HavenPrimaryTeal else Color(0xFFCBD5E1))
                             .clickable {
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(iteration)
+                                    pagerState.animateScrollToPage(iteration, animationSpec = androidx.compose.animation.core.tween(300))
                                 }
                             }
                     )
@@ -291,7 +289,7 @@ private fun WelcomeContent(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(1)
+                                pagerState.animateScrollToPage(1, animationSpec = androidx.compose.animation.core.tween(300))
                             }
                         },
                         modifier = Modifier
@@ -333,7 +331,7 @@ private fun WelcomeContent(
                         IconButton(
                             onClick = {
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1, animationSpec = androidx.compose.animation.core.tween(300))
                                 }
                             },
                             modifier = Modifier
