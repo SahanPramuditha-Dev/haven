@@ -124,6 +124,70 @@ class FamilyRepository(
         }
     }
 
+    suspend fun signInWithGoogle(context: android.content.Context): Result<com.example.haven.core.network.AuthTokenDto> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        try {
+            val credentialManager = androidx.credentials.CredentialManager.create(context)
+            val webClientId = "203542231273-prbft4vg81eevvrn1bt6i7vlh1t3ba4d.apps.googleusercontent.com"
+
+            val googleIdOption = com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(webClientId)
+                .setAutoSelectEnabled(false)
+                .build()
+
+            val request = androidx.credentials.GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
+
+            val result = credentialManager.getCredential(
+                request = request,
+                context = context
+            )
+
+            val credential = result.credential
+            val googleIdTokenCredential = com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.createFrom(credential.data)
+            val idToken = googleIdTokenCredential.idToken
+
+            // Sign in to Firebase with the Google ID token
+            val firebaseCredential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+            val authResult = firebaseAuth.signInWithCredential(firebaseCredential).await()
+            val fbUser = authResult.user ?: throw IllegalStateException("Firebase user was null after Google sign in")
+
+            // Obtain real Firebase ID Token
+            val fbTokenResult = fbUser.getIdToken(true).await()
+            val fbIdToken = fbTokenResult.token ?: throw IllegalStateException("Failed to obtain Firebase ID token")
+
+            // Authenticate with Cloud Run backend /auth/me to provision/fetch user profile in Neon PostgreSQL
+            apiClient.setAuthToken(fbIdToken)
+            val profileRes = apiClient.getCurrentUserProfile()
+            if (profileRes.isFailure) {
+                return@withContext Result.failure(profileRes.exceptionOrNull() ?: Exception("Failed to sync Google user with backend"))
+            }
+            val profile = profileRes.getOrThrow()
+
+            val tokenDto = com.example.haven.core.network.AuthTokenDto(
+                access_token = fbIdToken,
+                user_id = profile.id,
+                email = profile.email,
+                display_name = profile.display_name,
+                family_id = profile.family_id,
+                family_name = profile.family_name
+            )
+
+            _currentUser.value = CurrentUserState(
+                userId = tokenDto.user_id,
+                email = tokenDto.email,
+                displayName = tokenDto.display_name,
+                token = tokenDto.access_token
+            )
+            saveAuth(tokenDto.access_token, tokenDto.user_id, tokenDto.email, tokenDto.display_name)
+            refreshFamilies()
+            Result.success(tokenDto)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun logout() {
         try {
             firebaseAuth.signOut()

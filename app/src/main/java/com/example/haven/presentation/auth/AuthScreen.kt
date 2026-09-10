@@ -195,6 +195,62 @@ fun AuthScreen(
                     )
                 }
             }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                Text(
+                    text = "  or  ",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            val context = androidx.compose.ui.platform.LocalContext.current
+            var isGoogleLoading by remember { mutableStateOf(false) }
+
+            OutlinedButton(
+                onClick = {
+                    isGoogleLoading = true
+                    errorMessage = null
+                    coroutineScope.launch {
+                        val result = repository.signInWithGoogle(context)
+                        isGoogleLoading = false
+                        if (result.isSuccess) {
+                            onAuthSuccess()
+                        } else {
+                            val err = result.exceptionOrNull()
+                            if (err !is androidx.credentials.exceptions.GetCredentialCancellationException) {
+                                errorMessage = err?.localizedMessage ?: "Google Sign-In failed."
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = MaterialTheme.shapes.large,
+                enabled = !isLoading && !isGoogleLoading
+            ) {
+                if (isGoogleLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Text(
+                        text = "Continue with Google",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }
+
