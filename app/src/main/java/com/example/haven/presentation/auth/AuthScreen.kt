@@ -11,6 +11,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.animation.core.animateDpAsState
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -92,36 +96,71 @@ fun AuthScreen(
 }
 
 /**
- * 1. Welcome Screen — UI Board 01/40
+ * Data model representing each slide in the Get Started Onboarding Carousel
+ */
+private data class OnboardingSlide(
+    val title: String,
+    val description: String,
+    val drawableRes: Int
+)
+
+private val onboardingSlides = listOf(
+    OnboardingSlide(
+        title = "Safer families.\nHappier home lives.",
+        description = "Keep your loved ones safe, organized\nand connected — all in one place.",
+        drawableRes = R.drawable.ic_haven_welcome_scenic
+    ),
+    OnboardingSlide(
+        title = "Keep everyone safe",
+        description = "Real-time location, check-ins and\ninstant alerts when it matters most.",
+        drawableRes = R.drawable.ic_haven_onboarding_safety
+    ),
+    OnboardingSlide(
+        title = "Stay organized together",
+        description = "Tasks, routines, calendars and\nmore — all in one place.",
+        drawableRes = R.drawable.ic_haven_onboarding_organized
+    ),
+    OnboardingSlide(
+        title = "A happier home",
+        description = "Different days.\nA stronger tomorrow.",
+        drawableRes = R.drawable.ic_haven_onboarding_happier_home
+    )
+)
+
+/**
+ * 1. Welcome / Onboarding Carousel Screen — UI Board 01/40
  */
 @Composable
 private fun WelcomeContent(
     onGetStarted: () -> Unit,
     onAlreadyHaveAccount: () -> Unit
 ) {
+    val pagerState = rememberPagerState(pageCount = { onboardingSlides.size })
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Haven Logo + Name
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 16.dp)
+        // Top Header: Logo on left/center & Skip button on right
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.align(Alignment.Center),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_haven_logo),
                     contentDescription = "Haven Logo",
-                    modifier = Modifier.size(36.dp),
+                    modifier = Modifier.size(34.dp),
                     tint = HavenPrimaryTeal
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -134,120 +173,223 @@ private fun WelcomeContent(
                     )
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Safer families.\nHappier home lives.",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = HavenTextPrimary,
-                    lineHeight = 28.sp
-                ),
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "Keep your loved ones safe, organized\nand connected — all in one place.",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = HavenTextSecondary,
-                    lineHeight = 20.sp
-                ),
-                textAlign = TextAlign.Center
-            )
+
+            if (pagerState.currentPage < onboardingSlides.size - 1) {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(onboardingSlides.size - 1)
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Text(
+                        text = "Skip",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = HavenTextSecondary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
+            }
         }
 
-        // Center Scenic Haven House & Hill Illustration
-        Box(
+        // Horizontal Pager for the 4 interactive slides
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_haven_welcome_scenic),
-                contentDescription = "Haven Family Home Illustration",
+        ) { pageIndex ->
+            val slide = onboardingSlides[pageIndex]
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.92f)
-                    .height(210.dp)
-            )
+                    .fillMaxSize()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                // Slide Titles & Subtitles
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    Text(
+                        text = slide.title,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = HavenTextPrimary,
+                            lineHeight = 28.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = slide.description,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = HavenTextSecondary,
+                            lineHeight = 20.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Slide Graphic Vector
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(230.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = slide.drawableRes),
+                        contentDescription = slide.title,
+                        modifier = Modifier
+                            .fillMaxWidth(0.92f)
+                            .height(220.dp)
+                    )
+                }
+            }
         }
 
-        // Bottom Actions & Page Indicator
+        // Bottom Controls: Animated Pill Indicators & Navigation Actions
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Dot Indicators (Step Carousel indicator)
+            // Interactive/Animated Dot Indicators
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 24.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 24.dp, height = 8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(HavenPrimaryTeal)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFCBD5E1))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFCBD5E1))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFCBD5E1))
-                )
-            }
-
-            // Get Started Button (Deep Teal Pill)
-            Button(
-                onClick = onGetStarted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = HavenPrimaryTeal,
-                    contentColor = Color.White
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Get Started",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
+                repeat(onboardingSlides.size) { iteration ->
+                    val isSelected = pagerState.currentPage == iteration
+                    val width by animateDpAsState(
+                        targetValue = if (isSelected) 24.dp else 8.dp,
+                        label = "indicatorWidth"
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = Color.White
+                    val color = if (isSelected) HavenPrimaryTeal else Color(0xFFCBD5E1)
+                    Box(
+                        modifier = Modifier
+                            .size(width = width, height = 8.dp)
+                            .clip(if (isSelected) RoundedCornerShape(4.dp) else CircleShape)
+                            .background(color)
+                            .clickable {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(iteration)
+                                }
+                            }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            // Slide Action Buttons
+            if (pagerState.currentPage < onboardingSlides.size - 1) {
+                // On page 0: Pill Button "Get Started"
+                if (pagerState.currentPage == 0) {
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = HavenPrimaryTeal,
+                            contentColor = Color.White
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Get Started",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
+                } else {
+                    // On slides 1 and 2: Circular forward arrow button on right
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
+                            },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(HavenPrimaryTeal, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Next",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Final Page: "Create Account"
+                Button(
+                    onClick = onGetStarted,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = HavenPrimaryTeal,
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Create Account",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Secondary: I already have an account
             TextButton(
                 onClick = onAlreadyHaveAccount,
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier.height(44.dp)
             ) {
                 Text(
                     text = "I already have an account",
