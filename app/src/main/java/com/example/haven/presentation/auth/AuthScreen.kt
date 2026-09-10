@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -174,31 +175,35 @@ private fun WelcomeContent(
                 )
             }
 
-            if (pagerState.currentPage < onboardingSlides.size - 1) {
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(onboardingSlides.size - 1, animationSpec = androidx.compose.animation.core.tween(300))
-                        }
+            // Top Skip Button: stable layout slot with alpha toggle to prevent re-measurement lag
+            TextButton(
+                onClick = {
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(onboardingSlides.size - 1)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .graphicsLayer {
+                        alpha = if (pagerState.currentPage < onboardingSlides.size - 1) 1f else 0f
                     },
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                ) {
-                    Text(
-                        text = "Skip",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = HavenTextSecondary,
-                            fontWeight = FontWeight.Medium
-                        )
+                enabled = pagerState.currentPage < onboardingSlides.size - 1
+            ) {
+                Text(
+                    text = "Skip",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = HavenTextSecondary,
+                        fontWeight = FontWeight.Medium
                     )
-                }
+                )
             }
         }
 
-        // Horizontal Pager for the 4 interactive slides
+        // Horizontal Pager: pre-composed all 4 slides for instant lag-free gestures
         HorizontalPager(
             state = pagerState,
-            beyondViewportPageCount = 2,
-            key = { onboardingSlides[it].title },
+            beyondViewportPageCount = 3,
+            key = { it },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -254,20 +259,19 @@ private fun WelcomeContent(
             }
         }
 
-        // Bottom Controls: Animated Pill Indicators & Navigation Actions
+        // Bottom Controls: Fixed height containers to prevent recalculations
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Fast Dot Indicators
+            // Static dot indicators
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(bottom = 20.dp)
             ) {
-                val current = pagerState.currentPage
                 for (iteration in onboardingSlides.indices) {
-                    val isSelected = current == iteration
+                    val isSelected = pagerState.currentPage == iteration
                     Box(
                         modifier = Modifier
                             .size(width = if (isSelected) 24.dp else 8.dp, height = 8.dp)
@@ -275,66 +279,65 @@ private fun WelcomeContent(
                             .background(if (isSelected) HavenPrimaryTeal else Color(0xFFCBD5E1))
                             .clickable {
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(iteration, animationSpec = androidx.compose.animation.core.tween(300))
+                                    pagerState.scrollToPage(iteration)
                                 }
                             }
                     )
                 }
             }
 
-            // Slide Action Buttons
-            if (pagerState.currentPage < onboardingSlides.size - 1) {
-                // On page 0: Pill Button "Get Started"
-                if (pagerState.currentPage == 0) {
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(1, animationSpec = androidx.compose.animation.core.tween(300))
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(28.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = HavenPrimaryTeal,
-                            contentColor = Color.White
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+            // Fixed-Height Button Container (56.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                when {
+                    pagerState.currentPage == 0 -> {
+                        Button(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.scrollToPage(1)
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(28.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HavenPrimaryTeal,
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                         ) {
-                            Text(
-                                text = "Get Started",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Get Started",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
                                 )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = Color.White
-                            )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
-                } else {
-                    // On slides 1 and 2: Circular forward arrow button on right
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterEnd
-                    ) {
+                    pagerState.currentPage < onboardingSlides.size - 1 -> {
                         IconButton(
                             onClick = {
                                 coroutineScope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1, animationSpec = androidx.compose.animation.core.tween(300))
+                                    pagerState.scrollToPage(pagerState.currentPage + 1)
                                 }
                             },
                             modifier = Modifier
+                                .align(Alignment.CenterEnd)
                                 .size(56.dp)
                                 .background(HavenPrimaryTeal, CircleShape)
                         ) {
@@ -345,39 +348,37 @@ private fun WelcomeContent(
                             )
                         }
                     }
-                }
-            } else {
-                // Final Page: "Create Account"
-                Button(
-                    onClick = onGetStarted,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = HavenPrimaryTeal,
-                        contentColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Create Account",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White
-                            )
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = Color.White
-                        )
+                    else -> {
+                        Button(
+                            onClick = onGetStarted,
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(28.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HavenPrimaryTeal,
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Create Account",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.White
+                                )
+                            }
+                        }
                     }
                 }
             }
