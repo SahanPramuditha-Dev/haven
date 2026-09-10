@@ -1,0 +1,33 @@
+﻿version: '3.8'
+
+services:
+  haven-db:
+    image: postgres:16-alpine
+    container_name: haven-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: haven_user
+      POSTGRES_PASSWORD: haven_secure_password
+      POSTGRES_DB: haven_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  haven-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: haven-backend
+    restart: unless-stopped
+    depends_on:
+      - haven-db
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://haven_user:haven_secure_password@haven-db:5432/haven_db
+      ALLOW_DEV_TEST_AUTH: "True"
+      ENVIRONMENT: "development"
+
+volumes:
+  postgres_data:
