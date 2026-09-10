@@ -256,10 +256,16 @@ private fun WelcomeContent(
                 Image(
                     painter = painterResource(id = slide.drawableRes),
                     contentDescription = slide.title,
-                    modifier = Modifier
-                        .fillMaxWidth(if (pageIndex == 0) 0.95f else 0.88f)
-                        .height(if (pageIndex == 0) 250.dp else 230.dp)
-                        .clip(RoundedCornerShape(20.dp))
+                    modifier = if (pageIndex == 0) {
+                        Modifier
+                            .fillMaxWidth(0.96f)
+                            .height(250.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                    } else {
+                        Modifier
+                            .fillMaxWidth(0.92f)
+                            .height(245.dp)
+                    }
                 )
             }
         }
