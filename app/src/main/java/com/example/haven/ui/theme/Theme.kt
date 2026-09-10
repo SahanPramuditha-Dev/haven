@@ -79,9 +79,9 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun HAVENTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = false, // Design boards specify the clean light theme
+    // Dynamic color is disabled by default to preserve the Haven branded Teal/Mint palette
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
