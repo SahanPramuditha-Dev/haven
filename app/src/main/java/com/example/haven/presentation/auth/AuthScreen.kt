@@ -110,22 +110,27 @@ private val onboardingSlides = listOf(
     OnboardingSlide(
         title = "Safer families.\nHappier home lives.",
         description = "Keep your loved ones safe, organized\nand connected — all in one place.",
-        drawableRes = R.drawable.ic_haven_welcome_scenic
+        drawableRes = R.drawable.img_haven_scenery_welcome
     ),
     OnboardingSlide(
-        title = "Keep everyone safe",
-        description = "Real-time location, check-ins and\ninstant alerts when it matters most.",
-        drawableRes = R.drawable.ic_haven_onboarding_safety
+        title = "Family First",
+        description = "Stay connected, support each other\nand be there, always.",
+        drawableRes = R.drawable.img_onboarding_family
     ),
     OnboardingSlide(
-        title = "Stay organized together",
-        description = "Tasks, routines, calendars and\nmore — all in one place.",
-        drawableRes = R.drawable.ic_haven_onboarding_organized
+        title = "Greater Safety",
+        description = "Real-time locations, safe zones\nand instant alerts for peace of mind.",
+        drawableRes = R.drawable.img_onboarding_safety
     ),
     OnboardingSlide(
-        title = "A happier home",
-        description = "Different days.\nA stronger tomorrow.",
-        drawableRes = R.drawable.ic_haven_onboarding_happier_home
+        title = "More Organization",
+        description = "Manage tasks, routines, calendars\nand everything your family needs.",
+        drawableRes = R.drawable.img_onboarding_organization
+    ),
+    OnboardingSlide(
+        title = "A Brighter Tomorrow",
+        description = "Healthier, safer and happier\nhome lives together.",
+        drawableRes = R.drawable.img_onboarding_home
     )
 )
 
@@ -146,37 +151,38 @@ private fun WelcomeContent(
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Header: Logo on left/center & Skip button on right (always reserved space to prevent relayout)
+        // Top Header: Haven Logo + Skip button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 4.dp)
         ) {
-            Row(
-                modifier = Modifier.align(Alignment.Center),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_haven_logo),
+            if (activePageIndex == 0) {
+                // Slide 1 Welcome: Big Centered Stacked Emblem + Haven wordmark
+                Image(
+                    painter = painterResource(id = R.drawable.ic_haven_stacked_logo),
                     contentDescription = "Haven Logo",
-                    modifier = Modifier.size(34.dp),
-                    tint = HavenPrimaryTeal
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .height(84.dp)
+                        .padding(top = 8.dp)
                 )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "Haven",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = HavenPrimaryTeal,
-                        letterSpacing = (-0.5).sp
-                    )
+            } else {
+                // Subsequent slides: Compact horizontal Brand Logo on left
+                Image(
+                    painter = painterResource(id = R.drawable.ic_haven_brand_logo),
+                    contentDescription = "Haven Logo",
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .height(34.dp)
                 )
             }
 
+            // Top-right Skip button (always visible or reserved space)
             TextButton(
                 onClick = {
                     coroutineScope.launch {
@@ -184,7 +190,7 @@ private fun WelcomeContent(
                     }
                 },
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
+                    .align(Alignment.TopEnd)
                     .graphicsLayer {
                         alpha = if (activePageIndex < onboardingSlides.size - 1) 1f else 0f
                     },
@@ -200,28 +206,29 @@ private fun WelcomeContent(
             }
         }
 
-        // Dedicated Slide Title & Subtitle Area (Fixed height: exactly 96.dp so text never shifts or remeasures)
+        // Dedicated Slide Title & Subtitle Area (Fixed height so no jumping or clipping)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(96.dp),
+                .height(130.dp),
             contentAlignment = Alignment.Center
         ) {
             val slide = onboardingSlides[activePageIndex]
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 12.dp)
             ) {
                 Text(
                     text = slide.title,
-                    style = MaterialTheme.typography.titleLarge.copy(
+                    style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = HavenTextPrimary,
-                        lineHeight = 28.sp
+                        lineHeight = 32.sp,
+                        letterSpacing = (-0.5).sp
                     ),
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = slide.description,
                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -233,13 +240,13 @@ private fun WelcomeContent(
             }
         }
 
-        // Horizontal Pager ONLY for the center illustrations (Lightweight swiping)
+        // Horizontal Pager ONLY for illustrations (Clean, lightweight swiping)
         HorizontalPager(
             state = pagerState,
-            beyondViewportPageCount = 3,
+            beyondViewportPageCount = 4,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(230.dp)
+                .height(260.dp)
         ) { pageIndex ->
             val slide = onboardingSlides[pageIndex]
             Box(
@@ -250,13 +257,14 @@ private fun WelcomeContent(
                     painter = painterResource(id = slide.drawableRes),
                     contentDescription = slide.title,
                     modifier = Modifier
-                        .fillMaxWidth(0.92f)
-                        .height(220.dp)
+                        .fillMaxWidth(if (pageIndex == 0) 0.95f else 0.88f)
+                        .height(if (pageIndex == 0) 250.dp else 230.dp)
+                        .clip(RoundedCornerShape(20.dp))
                 )
             }
         }
 
-        // Bottom Controls: Fixed height containers
+        // Bottom Controls: Indicator + Primary Button + Sub-caption / Sign In
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -327,22 +335,39 @@ private fun WelcomeContent(
                         }
                     }
                     activePageIndex < onboardingSlides.size - 1 -> {
-                        IconButton(
+                        Button(
                             onClick = {
                                 coroutineScope.launch {
                                     pagerState.scrollToPage(activePageIndex + 1)
                                 }
                             },
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .size(56.dp)
-                                .background(HavenPrimaryTeal, CircleShape)
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RoundedCornerShape(28.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HavenPrimaryTeal,
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "Next",
-                                tint = Color.White
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Next",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                     else -> {
@@ -361,7 +386,7 @@ private fun WelcomeContent(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "Create Account",
+                                    text = "Get Started",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color.White
@@ -382,18 +407,30 @@ private fun WelcomeContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Secondary: I already have an account
-            TextButton(
-                onClick = onAlreadyHaveAccount,
-                modifier = Modifier.height(44.dp)
-            ) {
+            // Sub-caption or Sign in link
+            if (activePageIndex == 0) {
                 Text(
-                    text = "I already have an account",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        color = HavenPrimaryTeal
-                    )
+                    text = "A safer, more organized tomorrow\nstarts together.",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = HavenTextSecondary,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 16.sp
+                    ),
+                    modifier = Modifier.padding(bottom = 6.dp)
                 )
+            } else {
+                TextButton(
+                    onClick = onAlreadyHaveAccount,
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(
+                        text = "I already have an account",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = HavenPrimaryTeal
+                        )
+                    )
+                }
             }
         }
     }
