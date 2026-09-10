@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -138,6 +139,7 @@ private fun WelcomeContent(
 ) {
     val pagerState = rememberPagerState(pageCount = { onboardingSlides.size })
     val coroutineScope = rememberCoroutineScope()
+    val activePageIndex by remember { derivedStateOf { pagerState.currentPage } }
 
     Column(
         modifier = Modifier
@@ -148,7 +150,7 @@ private fun WelcomeContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Top Header: Logo on left/center & Skip button on right
+        // Top Header: Logo on left/center & Skip button on right (always reserved space to prevent relayout)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -175,7 +177,6 @@ private fun WelcomeContent(
                 )
             }
 
-            // Top Skip Button: stable layout slot with alpha toggle to prevent re-measurement lag
             TextButton(
                 onClick = {
                     coroutineScope.launch {
@@ -185,9 +186,9 @@ private fun WelcomeContent(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .graphicsLayer {
-                        alpha = if (pagerState.currentPage < onboardingSlides.size - 1) 1f else 0f
+                        alpha = if (activePageIndex < onboardingSlides.size - 1) 1f else 0f
                     },
-                enabled = pagerState.currentPage < onboardingSlides.size - 1
+                enabled = activePageIndex < onboardingSlides.size - 1
             ) {
                 Text(
                     text = "Skip",
@@ -199,79 +200,75 @@ private fun WelcomeContent(
             }
         }
 
-        // Horizontal Pager: pre-composed all 4 slides for instant lag-free gestures
-        HorizontalPager(
-            state = pagerState,
-            beyondViewportPageCount = 3,
-            key = { it },
+        // Dedicated Slide Title & Subtitle Area (Fixed height: exactly 96.dp so text never shifts or remeasures)
+        Box(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxWidth()
-        ) { pageIndex ->
-            val slide = onboardingSlides[pageIndex]
+                .height(96.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            val slide = onboardingSlides[activePageIndex]
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.padding(horizontal = 8.dp)
             ) {
-                // Slide Titles & Subtitles
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        text = slide.title,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = HavenTextPrimary,
-                            lineHeight = 28.sp
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = slide.description,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = HavenTextSecondary,
-                            lineHeight = 20.sp
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                // Slide Graphic Vector
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(230.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = slide.drawableRes),
-                        contentDescription = slide.title,
-                        modifier = Modifier
-                            .fillMaxWidth(0.92f)
-                            .height(220.dp)
-                    )
-                }
+                Text(
+                    text = slide.title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = HavenTextPrimary,
+                        lineHeight = 28.sp
+                    ),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = slide.description,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = HavenTextSecondary,
+                        lineHeight = 20.sp
+                    ),
+                    textAlign = TextAlign.Center
+                )
             }
         }
 
-        // Bottom Controls: Fixed height containers to prevent recalculations
+        // Horizontal Pager ONLY for the center illustrations (Lightweight swiping)
+        HorizontalPager(
+            state = pagerState,
+            beyondViewportPageCount = 3,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(230.dp)
+        ) { pageIndex ->
+            val slide = onboardingSlides[pageIndex]
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = slide.drawableRes),
+                    contentDescription = slide.title,
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .height(220.dp)
+                )
+            }
+        }
+
+        // Bottom Controls: Fixed height containers
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Static dot indicators
+            // Dot Indicators
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 20.dp)
             ) {
                 for (iteration in onboardingSlides.indices) {
-                    val isSelected = pagerState.currentPage == iteration
+                    val isSelected = activePageIndex == iteration
                     Box(
                         modifier = Modifier
                             .size(width = if (isSelected) 24.dp else 8.dp, height = 8.dp)
@@ -293,7 +290,7 @@ private fun WelcomeContent(
                     .height(56.dp)
             ) {
                 when {
-                    pagerState.currentPage == 0 -> {
+                    activePageIndex == 0 -> {
                         Button(
                             onClick = {
                                 coroutineScope.launch {
@@ -329,11 +326,11 @@ private fun WelcomeContent(
                             }
                         }
                     }
-                    pagerState.currentPage < onboardingSlides.size - 1 -> {
+                    activePageIndex < onboardingSlides.size - 1 -> {
                         IconButton(
                             onClick = {
                                 coroutineScope.launch {
-                                    pagerState.scrollToPage(pagerState.currentPage + 1)
+                                    pagerState.scrollToPage(activePageIndex + 1)
                                 }
                             },
                             modifier = Modifier
