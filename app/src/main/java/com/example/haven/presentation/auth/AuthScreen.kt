@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -158,53 +159,59 @@ private fun WelcomeContent(
                     .fillMaxSize()
                     .background(HavenBackgroundWash)
                     .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                    .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Top row with Skip button on right
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(36.dp)
-                ) {
-                    TextButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.scrollToPage(onboardingSlides.size - 1)
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        Text(
-                            text = "Skip",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = HavenTextSecondary,
-                                fontWeight = FontWeight.Medium
-                            )
-                        )
-                    }
-                }
-
-                // Centered Haven Stacked Logo
-                Image(
-                    painter = painterResource(id = R.drawable.ic_haven_stacked_logo),
-                    contentDescription = "Haven Logo",
-                    modifier = Modifier.height(76.dp)
-                )
-
-                // Title and Subtitle
+                // Top section: Skip button + Haven Logo + Title + Subtitle
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
                 ) {
+                    // Top row with Skip button on right
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp)
+                    ) {
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.scrollToPage(onboardingSlides.size - 1)
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                        ) {
+                            Text(
+                                text = "Skip",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = HavenTextSecondary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Centered Haven Stacked Logo
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_haven_stacked_logo),
+                        contentDescription = "Haven Logo",
+                        modifier = Modifier.height(78.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // Title and Subtitle
                     Text(
                         text = "Safer families.\nHappier home lives.",
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = HavenTextPrimary,
-                            lineHeight = 30.sp,
+                            lineHeight = 32.sp,
                             letterSpacing = (-0.4).sp
                         ),
                         textAlign = TextAlign.Center
@@ -220,25 +227,37 @@ private fun WelcomeContent(
                     )
                 }
 
-                // Scenery illustration
-                Image(
-                    painter = painterResource(id = R.drawable.img_haven_welcome_scenery),
-                    contentDescription = "Haven Home Welcome",
+                // Full-bleed scenery illustration matching spec board
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.92f)
-                        .height(190.dp)
-                )
+                        .fillMaxWidth()
+                        .weight(1.1f)
+                        .padding(top = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.img_haven_welcome_scenery),
+                        contentDescription = "Haven Home Welcome",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
 
                 // Bottom Controls
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 16.dp)
                 ) {
                     // 4 Dot Indicators (first is active)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 20.dp)
                     ) {
                         for (dotIndex in 0 until 4) {
                             val isSelected = dotIndex == 0
@@ -323,7 +342,7 @@ private fun WelcomeContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1.15f)
+                        .weight(1.25f)
                 ) {
                     Image(
                         painter = painterResource(id = slide.drawableRes),
@@ -363,7 +382,7 @@ private fun WelcomeContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(0.85f)
+                        .weight(0.75f)
                         .padding(horizontal = 24.dp)
                         .padding(bottom = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -372,7 +391,7 @@ private fun WelcomeContent(
                     // Title and Description
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 16.dp)
                     ) {
                         Text(
                             text = slide.title,
