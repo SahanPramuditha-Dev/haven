@@ -147,9 +147,15 @@ private fun WelcomeContent(
     val coroutineScope = rememberCoroutineScope()
     val activePageIndex by remember { derivedStateOf { pagerState.currentPage } }
 
+    // Preload & memoize drawable painters so swiping between pages does zero bitmap decoding on main thread
+    val welcomePainter = painterResource(id = R.drawable.img_haven_welcome_scenery)
+    val slidePainters = onboardingSlides.map { slide ->
+        if (slide.drawableRes != 0) painterResource(id = slide.drawableRes) else null
+    }
+
     HorizontalPager(
         state = pagerState,
-        beyondViewportPageCount = 4,
+        beyondViewportPageCount = 1,
         modifier = Modifier.fillMaxSize()
     ) { pageIndex ->
         if (pageIndex == 0) {
@@ -236,7 +242,7 @@ private fun WelcomeContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.img_haven_welcome_scenery),
+                        painter = welcomePainter,
                         contentDescription = "Haven Home Welcome",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -344,13 +350,16 @@ private fun WelcomeContent(
                         .fillMaxWidth()
                         .weight(1.25f)
                 ) {
-                    Image(
-                        painter = painterResource(id = slide.drawableRes),
-                        contentDescription = slide.title,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .align(Alignment.BottomCenter)
-                    )
+                    val currentPainter = slidePainters.getOrNull(pageIndex)
+                    if (currentPainter != null) {
+                        Image(
+                            painter = currentPainter,
+                            contentDescription = slide.title,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .align(Alignment.BottomCenter)
+                        )
+                    }
 
                     // Skip button on top right
                     Box(
