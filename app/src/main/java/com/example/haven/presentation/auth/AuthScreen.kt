@@ -35,8 +35,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -145,7 +150,6 @@ private fun WelcomeContent(
 ) {
     val pagerState = rememberPagerState(pageCount = { onboardingSlides.size })
     val coroutineScope = rememberCoroutineScope()
-    val activePageIndex by remember { derivedStateOf { pagerState.currentPage } }
 
     // Preload & memoize drawable painters so swiping between pages does zero bitmap decoding on main thread
     val welcomePainter = painterResource(id = R.drawable.img_haven_welcome_scenery)
@@ -521,6 +525,18 @@ private fun SignInContent(
     var isGoogleLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val focusManager = LocalFocusManager.current
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = HavenSurfaceWhite,
+        unfocusedContainerColor = HavenSurfaceWhite,
+        focusedBorderColor = HavenPrimaryTeal,
+        unfocusedBorderColor = HavenBorderLight,
+        focusedTextColor = HavenTextPrimary,
+        unfocusedTextColor = HavenTextPrimary,
+        focusedPlaceholderColor = HavenTextSecondary.copy(alpha = 0.6f),
+        unfocusedPlaceholderColor = HavenTextSecondary.copy(alpha = 0.6f)
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -567,8 +583,7 @@ private fun SignInContent(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it.trim(); errorMessage = null },
-            label = { Text("Email Address") },
-            placeholder = { Text("your@email.com") },
+            placeholder = { Text("Enter your email") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Email,
@@ -577,16 +592,13 @@ private fun SignInContent(
                 )
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = HavenSurfaceWhite,
-                unfocusedContainerColor = HavenSurfaceWhite,
-                focusedBorderColor = HavenPrimaryTeal,
-                unfocusedBorderColor = HavenBorderLight,
-                focusedTextColor = HavenTextPrimary,
-                unfocusedTextColor = HavenTextPrimary
-            )
+            colors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -595,7 +607,6 @@ private fun SignInContent(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it; errorMessage = null },
-            label = { Text("Password") },
             placeholder = { Text("Enter your password") },
             leadingIcon = {
                 Icon(
@@ -615,16 +626,16 @@ private fun SignInContent(
             },
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = HavenSurfaceWhite,
-                unfocusedContainerColor = HavenSurfaceWhite,
-                focusedBorderColor = HavenPrimaryTeal,
-                unfocusedBorderColor = HavenBorderLight,
-                focusedTextColor = HavenTextPrimary,
-                unfocusedTextColor = HavenTextPrimary
-            )
+            colors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -868,6 +879,18 @@ private fun RegisterContent(
     var isGoogleLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val focusManager = LocalFocusManager.current
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = HavenSurfaceWhite,
+        unfocusedContainerColor = HavenSurfaceWhite,
+        focusedBorderColor = HavenPrimaryTeal,
+        unfocusedBorderColor = HavenBorderLight,
+        focusedTextColor = HavenTextPrimary,
+        unfocusedTextColor = HavenTextPrimary,
+        focusedPlaceholderColor = HavenTextSecondary.copy(alpha = 0.6f),
+        unfocusedPlaceholderColor = HavenTextSecondary.copy(alpha = 0.6f)
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -914,7 +937,6 @@ private fun RegisterContent(
         OutlinedTextField(
             value = displayName,
             onValueChange = { displayName = it; errorMessage = null },
-            label = { Text("Full / Display Name") },
             placeholder = { Text("e.g. Sahan Pramuditha") },
             leadingIcon = {
                 Icon(
@@ -924,16 +946,12 @@ private fun RegisterContent(
                 )
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = HavenSurfaceWhite,
-                unfocusedContainerColor = HavenSurfaceWhite,
-                focusedBorderColor = HavenPrimaryTeal,
-                unfocusedBorderColor = HavenBorderLight,
-                focusedTextColor = HavenTextPrimary,
-                unfocusedTextColor = HavenTextPrimary
-            )
+            colors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -942,7 +960,6 @@ private fun RegisterContent(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it.trim(); errorMessage = null },
-            label = { Text("Email Address") },
             placeholder = { Text("your@email.com") },
             leadingIcon = {
                 Icon(
@@ -952,16 +969,13 @@ private fun RegisterContent(
                 )
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = HavenSurfaceWhite,
-                unfocusedContainerColor = HavenSurfaceWhite,
-                focusedBorderColor = HavenPrimaryTeal,
-                unfocusedBorderColor = HavenBorderLight,
-                focusedTextColor = HavenTextPrimary,
-                unfocusedTextColor = HavenTextPrimary
-            )
+            colors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -970,8 +984,7 @@ private fun RegisterContent(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it; errorMessage = null },
-            label = { Text("Password (min 8 characters)") },
-            placeholder = { Text("Create strong password") },
+            placeholder = { Text("Create strong password (min 8 chars)") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Lock,
@@ -990,16 +1003,16 @@ private fun RegisterContent(
             },
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = HavenSurfaceWhite,
-                unfocusedContainerColor = HavenSurfaceWhite,
-                focusedBorderColor = HavenPrimaryTeal,
-                unfocusedBorderColor = HavenBorderLight,
-                focusedTextColor = HavenTextPrimary,
-                unfocusedTextColor = HavenTextPrimary
-            )
+            colors = textFieldColors
         )
 
         if (errorMessage != null) {
