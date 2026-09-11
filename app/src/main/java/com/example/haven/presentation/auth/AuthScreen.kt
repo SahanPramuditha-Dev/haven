@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -187,11 +188,7 @@ private fun WelcomeContent(
                             .height(40.dp)
                     ) {
                         TextButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(onboardingSlides.size - 1)
-                                }
-                            },
+                            onClick = onGetStarted,
                             modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
                             Text(
@@ -373,11 +370,7 @@ private fun WelcomeContent(
                             .padding(top = 8.dp, end = 16.dp)
                     ) {
                         TextButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(onboardingSlides.size - 1)
-                                }
-                            },
+                            onClick = onGetStarted,
                             modifier = Modifier.align(Alignment.TopEnd)
                         ) {
                             Text(
@@ -595,6 +588,9 @@ private fun SignInContent(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
             ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
@@ -949,6 +945,9 @@ private fun RegisterContent(
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
             colors = textFieldColors
@@ -972,6 +971,9 @@ private fun RegisterContent(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
             ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
