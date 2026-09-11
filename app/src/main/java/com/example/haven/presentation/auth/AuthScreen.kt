@@ -110,32 +110,32 @@ private val onboardingSlides = listOf(
     OnboardingSlide(
         title = "Safer families.\nHappier home lives.",
         description = "Keep your loved ones safe, organized\nand connected — all in one place.",
-        drawableRes = R.drawable.img_haven_scenery_welcome
+        drawableRes = R.drawable.img_haven_welcome_scenery
     ),
     OnboardingSlide(
         title = "Family First",
         description = "Stay connected, support each other\nand be there, always.",
-        drawableRes = R.drawable.img_onboarding_family
+        drawableRes = R.drawable.img_haven_onboarding_family
     ),
     OnboardingSlide(
         title = "Greater Safety",
         description = "Real-time locations, safe zones\nand instant alerts for peace of mind.",
-        drawableRes = R.drawable.img_onboarding_safety
+        drawableRes = R.drawable.img_haven_onboarding_safety
     ),
     OnboardingSlide(
         title = "More Organization",
         description = "Manage tasks, routines, calendars\nand everything your family needs.",
-        drawableRes = R.drawable.img_onboarding_organization
+        drawableRes = R.drawable.img_haven_onboarding_organization
     ),
     OnboardingSlide(
         title = "A Brighter Tomorrow",
         description = "Healthier, safer and happier\nhome lives together.",
-        drawableRes = R.drawable.img_onboarding_home
+        drawableRes = R.drawable.img_haven_onboarding_tomorrow
     )
 )
 
 /**
- * 1. Welcome / Onboarding Carousel Screen — UI Board 01/40
+ * 1. Welcome / Onboarding Carousel Screen — Matching Haven Onboarding UI Specification Board
  */
 @Composable
 private fun WelcomeContent(
@@ -146,296 +146,324 @@ private fun WelcomeContent(
     val coroutineScope = rememberCoroutineScope()
     val activePageIndex by remember { derivedStateOf { pagerState.currentPage } }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Top Header: Haven Logo + Skip button
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp)
-        ) {
-            if (activePageIndex == 0) {
-                // Slide 1 Welcome: Big Centered Stacked Emblem + Haven wordmark
+    HorizontalPager(
+        state = pagerState,
+        beyondViewportPageCount = 4,
+        modifier = Modifier.fillMaxSize()
+    ) { pageIndex ->
+        if (pageIndex == 0) {
+            // Screen 01: Welcome
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(HavenBackgroundWash)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Top row with Skip button on right
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                ) {
+                    TextButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.scrollToPage(onboardingSlides.size - 1)
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Text(
+                            text = "Skip",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = HavenTextSecondary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
+
+                // Centered Haven Stacked Logo
                 Image(
                     painter = painterResource(id = R.drawable.ic_haven_stacked_logo),
                     contentDescription = "Haven Logo",
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .height(84.dp)
-                        .padding(top = 8.dp)
+                    modifier = Modifier.height(76.dp)
                 )
-            } else {
-                // Subsequent slides: Compact horizontal Brand Logo on left
-                Image(
-                    painter = painterResource(id = R.drawable.ic_haven_brand_logo),
-                    contentDescription = "Haven Logo",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .height(34.dp)
-                )
-            }
 
-            // Top-right Skip button (always visible or reserved space)
-            TextButton(
-                onClick = {
-                    coroutineScope.launch {
-                        pagerState.scrollToPage(onboardingSlides.size - 1)
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .graphicsLayer {
-                        alpha = if (activePageIndex < onboardingSlides.size - 1) 1f else 0f
-                    },
-                enabled = activePageIndex < onboardingSlides.size - 1
-            ) {
-                Text(
-                    text = "Skip",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = HavenTextSecondary,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
-        }
-
-        // Dedicated Slide Title & Subtitle Area (Fixed height so no jumping or clipping)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(130.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            val slide = onboardingSlides[activePageIndex]
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            ) {
-                Text(
-                    text = slide.title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = HavenTextPrimary,
-                        lineHeight = 32.sp,
-                        letterSpacing = (-0.5).sp
-                    ),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = slide.description,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = HavenTextSecondary,
-                        lineHeight = 20.sp
-                    ),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-
-        // Horizontal Pager ONLY for illustrations (Clean, lightweight swiping)
-        HorizontalPager(
-            state = pagerState,
-            beyondViewportPageCount = 4,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(260.dp)
-        ) { pageIndex ->
-            val slide = onboardingSlides[pageIndex]
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = slide.drawableRes),
-                    contentDescription = slide.title,
-                    modifier = if (pageIndex == 0) {
-                        Modifier
-                            .fillMaxWidth(0.96f)
-                            .height(250.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                    } else {
-                        Modifier
-                            .fillMaxWidth(0.92f)
-                            .height(245.dp)
-                    }
-                )
-            }
-        }
-
-        // Bottom Controls: Indicator + Primary Button + Sub-caption / Sign In
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Dot Indicators
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 20.dp)
-            ) {
-                for (iteration in onboardingSlides.indices) {
-                    val isSelected = activePageIndex == iteration
-                    Box(
-                        modifier = Modifier
-                            .size(width = if (isSelected) 24.dp else 8.dp, height = 8.dp)
-                            .clip(if (isSelected) RoundedCornerShape(4.dp) else CircleShape)
-                            .background(if (isSelected) HavenPrimaryTeal else Color(0xFFCBD5E1))
-                            .clickable {
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(iteration)
-                                }
-                            }
-                    )
-                }
-            }
-
-            // Fixed-Height Button Container (56.dp)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                when {
-                    activePageIndex == 0 -> {
-                        Button(
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(1)
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            shape = RoundedCornerShape(28.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = HavenPrimaryTeal,
-                                contentColor = Color.White
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Get Started",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.White
-                                    )
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                    activePageIndex < onboardingSlides.size - 1 -> {
-                        Button(
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.scrollToPage(activePageIndex + 1)
-                                }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            shape = RoundedCornerShape(28.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = HavenPrimaryTeal,
-                                contentColor = Color.White
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Next",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.White
-                                    )
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                    else -> {
-                        Button(
-                            onClick = onGetStarted,
-                            modifier = Modifier.fillMaxSize(),
-                            shape = RoundedCornerShape(28.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = HavenPrimaryTeal,
-                                contentColor = Color.White
-                            ),
-                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Text(
-                                    text = "Get Started",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color.White
-                                    )
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Sub-caption or Sign in link
-            if (activePageIndex == 0) {
-                Text(
-                    text = "A safer, more organized tomorrow\nstarts together.",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = HavenTextSecondary,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 16.sp
-                    ),
-                    modifier = Modifier.padding(bottom = 6.dp)
-                )
-            } else {
-                TextButton(
-                    onClick = onAlreadyHaveAccount,
-                    modifier = Modifier.height(36.dp)
+                // Title and Subtitle
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     Text(
-                        text = "I already have an account",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            color = HavenPrimaryTeal
-                        )
+                        text = "Safer families.\nHappier home lives.",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = HavenTextPrimary,
+                            lineHeight = 30.sp,
+                            letterSpacing = (-0.4).sp
+                        ),
+                        textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Keep your loved ones safe, organized\nand connected — all in one place.",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = HavenTextSecondary,
+                            lineHeight = 20.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Scenery illustration
+                Image(
+                    painter = painterResource(id = R.drawable.img_haven_welcome_scenery),
+                    contentDescription = "Haven Home Welcome",
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .height(190.dp)
+                )
+
+                // Bottom Controls
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // 4 Dot Indicators (first is active)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    ) {
+                        for (dotIndex in 0 until 4) {
+                            val isSelected = dotIndex == 0
+                            Box(
+                                modifier = Modifier
+                                    .size(7.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) HavenTextPrimary else Color(0xFFCBD5E1))
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            pagerState.scrollToPage(if (dotIndex == 0) 0 else dotIndex + 1)
+                                        }
+                                    }
+                            )
+                        }
+                    }
+
+                    // Get Started Button
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.scrollToPage(1)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp),
+                        shape = RoundedCornerShape(27.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = HavenPrimaryTeal,
+                            contentColor = Color.White
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Get Started",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Sub-caption
+                    Text(
+                        text = "A safer, more organized tomorrow\nstarts together.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = HavenTextSecondary,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 16.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
+            }
+        } else {
+            // Screens 02, 03, 04, 05: Feature slides with top full-bleed illustration & wavy transition
+            val slide = onboardingSlides[pageIndex]
+            val featureIndex = pageIndex - 1 // 0, 1, 2, 3
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(HavenBackgroundWash)
+                    .navigationBarsPadding()
+            ) {
+                // Top Half: Vector artwork with wavy transition + Skip button overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1.15f)
+                ) {
+                    Image(
+                        painter = painterResource(id = slide.drawableRes),
+                        contentDescription = slide.title,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.BottomCenter)
+                    )
+
+                    // Skip button on top right
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(top = 8.dp, end = 16.dp)
+                    ) {
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.scrollToPage(onboardingSlides.size - 1)
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.TopEnd)
+                        ) {
+                            Text(
+                                text = "Skip",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = HavenTextSecondary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Bottom Half: Clean information section matching spec board
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.85f)
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Title and Description
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text(
+                            text = slide.title,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = HavenTextPrimary,
+                                lineHeight = 32.sp,
+                                letterSpacing = (-0.4).sp
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = slide.description,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = HavenTextSecondary,
+                                lineHeight = 20.sp
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Bottom: 4 Dot Indicators + Action Button
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // 4 Dot Indicators
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(bottom = 22.dp)
+                        ) {
+                            for (dotIndex in 0 until 4) {
+                                val isSelected = dotIndex == featureIndex
+                                Box(
+                                    modifier = Modifier
+                                        .size(7.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) HavenTextPrimary else Color(0xFFCBD5E1))
+                                        .clickable {
+                                            coroutineScope.launch {
+                                                pagerState.scrollToPage(dotIndex + 1)
+                                            }
+                                        }
+                                )
+                            }
+                        }
+
+                        // Button: "Next →" for 02, 03, 04; "Get Started →" for 05
+                        Button(
+                            onClick = {
+                                if (pageIndex < onboardingSlides.size - 1) {
+                                    coroutineScope.launch {
+                                        pagerState.scrollToPage(pageIndex + 1)
+                                    }
+                                } else {
+                                    onGetStarted()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(54.dp),
+                            shape = RoundedCornerShape(27.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = HavenPrimaryTeal,
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = if (pageIndex == onboardingSlides.size - 1) "Get Started" else "Next",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -456,8 +484,8 @@ private fun SignInContent(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    var email by remember { mutableStateOf("lucix910@gmail.com") }
-    var password by remember { mutableStateOf("SecurePassword123!") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var keepSignedIn by remember { mutableStateOf(true) }
 

@@ -4,14 +4,15 @@ import androidx.compose.ui.graphics.Color
 
 // Material 3 Color System - Haven Theme (https://m3.material.io/styles/color/the-color-system/color-roles)
 
-// Official Haven Design System Colors (From UI Design Boards)
-val HavenPrimaryTeal = Color(0xFF0F4C5C)
-val HavenSecondaryMint = Color(0xFF14BBA6)
-val HavenAccentEmerald = Color(0xFF34A853)
-val HavenBackgroundWash = Color(0xFFF0FAF8)
-val HavenSurfaceWhite = Color(0xFFFFFFFF)
-val HavenTextPrimary = Color(0xFF0F172A)
-val HavenTextSecondary = Color(0xFF64748B)
+// Official Haven Design System Colors (From UI Design Board: Haven Onboarding UI Specification Board)
+val HavenPrimaryTeal = Color(0xFF0F4C5C)       // Primary: #0F4C5C
+val HavenPrimaryLight = Color(0xFFE6F4F5)      // Primary Light: #E6F4F5
+val HavenSecondaryMint = Color(0xFF10B981)     // Secondary: #10B981
+val HavenAccentOrange = Color(0xFFF59E0B)      // Accent: #F59E0B
+val HavenBackgroundWash = Color(0xFFFAFCFC)    // Background: #FAFCFC
+val HavenSurfaceWhite = Color(0xFFFFFFFF)      // Surface: #FFFFFF
+val HavenTextPrimary = Color(0xFF0B1F33)       // Text Primary: #0B1F33
+val HavenTextSecondary = Color(0xFF64748B)     // Text Secondary: #64748B
 val HavenBorderLight = Color(0xFFE2E8F0)
 val HavenCardBg = Color(0xFFF8FAFC)
 
